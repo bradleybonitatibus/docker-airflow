@@ -1,36 +1,43 @@
-import airflow
-from airflow.models import DAG
-from datetime import timedelta, datetime
-from airflow.operators.python_operator import PythonOperator
+import json
 
-args = {
-    "owner": "Bradley Bonitatibus",
-    "start_date": "2019-12-21",
+from airflow.decorators import dag, task # noqa
+from airflow.utils.dates import days_ago # noqa
+
+
+default_args = {
+    'owner': 'brad'
 }
 
-def hello(**kwargs):
-    print("Hello there")
-    return
 
-with DAG(
-  default_args=args,
-  schedule_interval="@hourly",
-  dag_id="hello_airflow",
-) as dag:
+@dag(default_args=default_args, schedule_interval=None, start_date=days_ago(2))  # noqa
+def my_first_airflow_2_pipeline():
+    @task()
+    def extract():
+        """Pull some data and return it as dictionary
+        """
+        some_kv_data = '{"1001": 301.27, "1002": 433.21, "1003": 502.22}'
+        data_dict = json.loads(some_kv_data)
+        return data_dict
 
-  task = PythonOperator(
-    task_id="first",
-    python_callable=hello,
-    provide_context=True
-  )
+    @task(multiple_outputs=True)
+    def transform(data_dict: dict):
+        """Aggregate and transform dictionary data and return it
+        """
+        total = 0
+        for v in data_dict.values():
+            total += v
 
-for i in range(40):
-    next_task = PythonOperator(
-      task_id="task_{0}".format(i),
-      python_callable=hello,
-      provide_context=True,
-      op_kwargs={
-          "num": i
-      }
-    )
-    task >> next_task
+        return {'total_sales': total}
+
+    @task()
+    def load(total_order: float):
+        """Load / log summarized data
+        """
+        print(f'Total sales is: {total_order}')
+
+    data = extract()
+    summary = transform(data)
+    load(summary['total_sales'])
+
+
+d = my_first_airflow_2_pipeline()
