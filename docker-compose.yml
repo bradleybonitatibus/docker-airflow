@@ -39,13 +39,14 @@ services:
     depends_on: 
       - postgres
 
-  # create_admin:
-  #   image: apache/airflow:2.0.0-python3.7
-  #   command: users create --username $user --firstname $fn --lastname $ln --role $role --email $email --password $pw
-  #   env_file:
-  #     - ./.env
-  #   depends_on: 
-  #     - postgres
+  create_admin:
+    image: apache/airflow:2.0.0-python3.7
+    command: users create --username $user --firstname $fn --lastname $ln --role $role --email $email --password $pw
+    env_file:
+      - ./.env
+    depends_on: 
+      - postgres
+      - initdb
 volumes:
   airflow-pg:
     external: true
