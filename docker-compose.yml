@@ -2,7 +2,7 @@ version: "2.1"
 services:
   postgres:
     restart: always
-    image: postgres:9.6
+    image: postgres:12
     env_file:
       - ./.pg.env
 
@@ -10,22 +10,42 @@ services:
       - airflow-pg:/var/lib/postgresql/data
 
   webserver:
-    image: puckel/docker-airflow:1.10.6
+    image: apache/airflow:2.0.0-python3.7
     restart: always
     depends_on:
       - postgres
     env_file:
       - ./.env
     volumes:
-      - ./dags:/usr/local/airflow/dags
+      - ./dags:/opt/airflow/dags
     ports:
       - "8080:8080"
     command: webserver
-    healthcheck:
-      test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
+  scheduler:
+    image: apache/airflow:2.0.0-python3.7
+    restart: always
+    depends_on:
+      - postgres
+    env_file:
+      - ./.env
+    command: scheduler
+    volumes:
+      - ./dags:/opt/airflow/dags
+  initdb:
+    image: apache/airflow:2.0.0-python3.7
+    command: db upgrade
+    env_file: 
+      - ./.env
+    depends_on: 
+      - postgres
+
+  # create_admin:
+  #   image: apache/airflow:2.0.0-python3.7
+  #   command: users create --username $user --firstname $fn --lastname $ln --role $role --email $email --password $pw
+  #   env_file:
+  #     - ./.env
+  #   depends_on: 
+  #     - postgres
 volumes:
   airflow-pg:
     external: true
