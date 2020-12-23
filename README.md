@@ -26,7 +26,12 @@ Next, the `.env` file contains Airflow environment variables, and the only one r
 AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@postgres:5432/airflow
 ```
 
-The `postgres` credentials need to match this connection string.
+The `postgres` credentials need to match this values connection string in the form of
+```
+AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{SERVICE_NAME}:{POSTGRES_PORT}/{POSTGRES_DB}
+```
+
+Note that the `SERVICE_NAME` in this example uses `postgres` as that is the service name defined in the `docker-compose.yaml`.
 
 ## Create a Docker volume for the database
 ```bash
