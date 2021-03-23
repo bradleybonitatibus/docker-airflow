@@ -1,16 +1,16 @@
 # Airflow 2.0 Sandbox
 Sandbox for getting started with Airflow 2.0
-## Using this repo
-To start, ensure you have `docker` and `docker-compose` installed.
-Once you have them installed, run the following command to persist the `postgres` data in this volume:
 
+## Using this repo
+Before starting, ensure you have `docker` and `docker-compose` installed.
+Once you have them installed, this readme will walk through the steps required to setup your environment.
 
 ## Environment Variables
 Create the following files in the root directory of the repository:
 - `.pg.env`
 - `.env`
 
-The `.pg.env` contains the `postgres` environment variables for the root user
+Inside the `.pg.env` contains the `postgres` environment variables for the root user
 of the database. In this case, you can use:
 
 ```
@@ -33,25 +33,25 @@ AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://{POSTGRES_USER}:{POSTGRES_
 
 Note that the `SERVICE_NAME` in this example uses `postgres` as that is the service name defined in the `docker-compose.yaml`.
 
-## Create a Docker volume for the database
+## Metadata Database Setup
+As we want to maintain some state between starting and stoping our environment, we will create an external `docker volume` named `airflow-pg`
+
 ```bash
 docker volume create --name airflow-pg
-```
-
-## Initialize Database Backend & Create User
-After creating the `airflow-pg` Docker volume to persist the database, you'll need to create a user
-to log into the Airflow UI.
-
-While running the `postgres` database in a seperate terminal:
-```bash
 docker-compose up postgres
 ```
+
+This will start the `postgres` service.
+
+## Create a User
+After creating the `airflow-pg` Docker volume to persist the database, you'll need to create a user
+to log into the Airflow UI.
 
 You can run the following command to initialize the database and create a user.
 Make sure to replace the command line flags in the `create_admin` service with
 the values you would use for your user.
 
-<bold>Please go into the `./docker-compose.yml` file and edit the `create_admin` service:
+<b>Please go into the `./docker-compose.yml` file and edit the `create_admin` service</b>:
 
 ```yaml
   create_admin:
@@ -72,6 +72,8 @@ Note: the `$role` needs to be one of the following values:
 - Op
 - Viewer
 - Public
+
+With the `postgres` service still running, in a seperate terminal session, run the following:
 
 ```bash
 docker-compose up initdb create_admin
