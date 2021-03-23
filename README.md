@@ -51,6 +51,28 @@ You can run the following command to initialize the database and create a user.
 Make sure to replace the command line flags in the `create_admin` service with
 the values you would use for your user.
 
+<bold>Please go into the `./docker-compose.yml` file and edit the `create_admin` service:
+
+```yaml
+  create_admin:
+    image: apache/airflow:2.0.0-python3.7
+    command: users create --username $user --firstname $fn --lastname $ln --role $role --email $email --password $pw
+    env_file:
+      - ./.env
+    depends_on: 
+      - postgres
+      - initdb
+```
+
+The `$user`, `$fn`, `$ln`, `$role`, `$email`, and `$pw` all need to be replaced with the values you want for your particular user.
+
+Note: the `$role` needs to be one of the following values:
+- Admin
+- User
+- Op
+- Viewer
+- Public
+
 ```bash
 docker-compose up initdb create_admin
 ```
